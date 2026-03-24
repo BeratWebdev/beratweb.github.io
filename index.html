@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="tr">
+<link rel="icon" href="https://cdn.discordapp.com/avatars/1153776118093058048/b8d95935377fce858240ee86d790c803.png?size=256">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BeratWeb</title>
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f6f3;
+  --ink:#111010;
+  --ink2:#6b6b6b;
+  --ink3:#b0afa9;
+  --line:#e4e3de;
+  --white:#ffffff;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Instrument Sans',sans-serif;
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+body.entered{overflow-y:auto}
+a{color:inherit;text-decoration:none}
+
+/* ── GİRİŞ EKRANI ── */
+#loader{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--ink);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2.5rem;
+  transition:opacity 0.6s ease, visibility 0.6s;
+}
+#loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.loader-logo{
+  font-family:'Cabinet Grotesk',sans-serif;
+  font-size:clamp(2rem,6vw,4rem);
+  font-weight:800;letter-spacing:-0.04em;
+  color:var(--white);
+}
+.loader-logo span{color:var(--ink3)}
+.loader-enter{
+  display:flex;flex-direction:column;align-items:center;gap:0.75rem;
+  cursor:pointer;
+}
+.loader-btn{
+  font-family:'Cabinet Grotesk',sans-serif;
+  font-size:0.78rem;font-weight:700;
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--ink3);
+  border:1px solid rgba(255,255,255,0.15);
+  padding:0.65rem 2rem;border-radius:100px;
+  transition:all 0.2s;
+  animation:blink 2s ease-in-out infinite;
+}
+.loader-enter:hover .loader-btn{
+  color:var(--white);
+  border-color:rgba(255,255,255,0.5);
+  animation:none;
+}
+@keyframes blink{0%,100%{opacity:0.4}50%{opacity:1}}
+.loader-hint{font-size:0.68rem;color:rgba(255,255,255,0.2);letter-spacing:0.08em}
+.loader-line{
+  width:1px;height:60px;
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.15));
+  position:absolute;bottom:2rem;
+}
+
+/* ── NAV ── */
+nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.1rem 2rem;
+  border-bottom:1px solid var(--line);
+  background:var(--bg);
+  position:sticky;top:0;z-index:50;
+}
+.logo{font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:1rem;letter-spacing:-0.02em;display:flex;align-items:center;gap:10px}
+.nav-status-dot{width:7px;height:7px;border-radius:50%;background:var(--ink3);transition:background 0.3s,box-shadow 0.3s;flex-shrink:0}
+.nav-status-dot.online{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,0.15)}
+.nav-status-dot.idle{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.15)}
+.nav-status-dot.dnd{background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,0.15)}
+.nav-r{display:flex;align-items:center;gap:2rem}
+.nav-r a{font-size:0.82rem;color:var(--ink2);transition:color 0.15s}
+.nav-r a:hover{color:var(--ink)}
+.nav-tag{font-size:0.75rem;padding:0.35rem 0.9rem;border:1px solid var(--line);border-radius:100px;color:var(--ink2);background:var(--white);transition:border-color 0.15s}
+.nav-tag:hover{border-color:#c0bfb9;color:var(--ink)}
+
+/* ── MÜZİK ÇUBUĞU ── */
+.music-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--white);
+  border-top:1px solid var(--line);
+  padding:0.85rem 2rem;
+  display:flex;align-items:center;gap:1.25rem;
+}
+.music-btn{
+  width:34px;height:34px;border-radius:50%;
+  border:1px solid var(--line);background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;transition:background 0.15s,border-color 0.15s;
+  color:var(--ink);
+}
+.music-btn:hover{background:var(--ink);border-color:var(--ink);color:var(--white)}
+.music-btn{font-size:14px;line-height:1}
+.music-anim{display:flex;align-items:flex-end;gap:2px;height:16px;flex-shrink:0}
+.mbl{width:3px;border-radius:2px;background:var(--ink3);height:4px}
+.mbl.playing{animation:mbar 0.7s ease-in-out infinite}
+.mbl:nth-child(2){animation-delay:0.15s}
+.mbl:nth-child(3){animation-delay:0.3s}
+.mbl:nth-child(4){animation-delay:0.45s}
+@keyframes mbar{0%,100%{height:3px}50%{height:14px}}
+.music-info{flex:1;min-width:0}
+.music-title{font-size:0.78rem;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.music-sub{font-size:0.68rem;color:var(--ink3);margin-top:1px}
+.music-prog-wrap{flex:1;display:flex;align-items:center;gap:0.75rem;min-width:0}
+.mtime{font-size:0.68rem;color:var(--ink3);flex-shrink:0;font-variant-numeric:tabular-nums;min-width:2.8rem}
+.mtime.r{text-align:right}
+.mtrack{flex:1;height:3px;background:var(--line);border-radius:100px;cursor:pointer;position:relative}
+.mfill{height:100%;background:var(--ink);border-radius:100px;width:0%;pointer-events:none}
+.mvol-wrap{display:flex;align-items:center;gap:0.6rem;flex-shrink:0}
+.vico{cursor:pointer;color:var(--ink3);transition:color 0.15s;display:flex;align-items:center}
+.vico:hover{color:var(--ink)}
+.vico svg{width:14px;height:14px;fill:currentColor}
+.mvol{-webkit-appearance:none;appearance:none;width:70px;height:3px;border-radius:100px;background:var(--line);outline:none;cursor:pointer}
+.mvol::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--ink);cursor:pointer;transition:transform 0.15s}
+.mvol::-webkit-slider-thumb:hover{transform:scale(1.2)}
+body.entered{padding-bottom:64px}
+
+/* ── HERO ── */
+.hero{padding:6rem 2rem 5rem;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;align-items:end;gap:2rem}
+.hero-status{display:inline-flex;align-items:center;gap:10px;font-size:0.75rem;color:var(--ink2);margin-bottom:1.75rem}
+.hero-avatar{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);object-fit:cover;background:var(--line);transition:border-color 0.3s;flex-shrink:0}
+.hero-avatar:hover{border-color:#c0bfb9}
+.hero-username{font-size:0.88rem;font-weight:500;color:var(--ink)}
+.hero-custom-status{font-size:0.75rem;color:var(--ink3);margin-top:2px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+h1{font-family:'Cabinet Grotesk',sans-serif;font-size:clamp(3.2rem,7vw,6.5rem);font-weight:800;line-height:0.92;letter-spacing:-0.04em;color:var(--ink);margin-bottom:1.75rem}
+h1 em{font-style:normal;color:var(--ink2)}
+.hero-desc{max-width:400px;font-size:0.95rem;line-height:1.75;color:var(--ink2)}
+.hero-right{display:flex;flex-direction:column;align-items:flex-end;padding-bottom:0.25rem}
+.hero-year{font-family:'Cabinet Grotesk',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);writing-mode:vertical-rl;transform:rotate(180deg)}
+
+/* ── DISCORD ── */
+.discord-section{border-bottom:1px solid var(--line)}
+.sec-head{padding:2rem 2rem 0;display:flex;justify-content:space-between;align-items:baseline}
+.section-title{font-family:'Cabinet Grotesk',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-0.02em}
+.sec-label{font-size:0.75rem;color:var(--ink3)}
+.discord-body{padding:1.5rem 2rem 2rem;display:grid;grid-template-columns:auto 1fr;gap:1.5rem;align-items:start}
+.dc-avatar-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
+.dc-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--line);border:1px solid var(--line)}
+.dc-ring{position:absolute;bottom:2px;right:2px;width:16px;height:16px;border-radius:50%;border:2px solid var(--bg);background:var(--ink3);transition:background 0.3s}
+.dc-ring.online{background:#22c55e}.dc-ring.idle{background:#f59e0b}.dc-ring.dnd{background:#ef4444}
+.dc-name{font-family:'Cabinet Grotesk',sans-serif;font-size:1.15rem;font-weight:800;letter-spacing:-0.02em;color:var(--ink)}
+.dc-tag{font-size:0.75rem;color:var(--ink3);margin-bottom:0.5rem}
+.dc-custom{font-size:0.82rem;color:var(--ink2);line-height:1.5;margin-bottom:0.75rem;min-height:1.2em}
+.dc-badge{display:inline-flex;align-items:center;gap:6px;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.2rem 0.65rem;border-radius:100px;border:1px solid;font-weight:500}
+.dc-badge.online{color:#16a34a;border-color:#bbf7d0;background:#f0fdf4}
+.dc-badge.idle{color:#92400e;border-color:#fde68a;background:#fffbeb}
+.dc-badge.dnd{color:#991b1b;border-color:#fecaca;background:#fef2f2}
+.dc-badge.offline{color:var(--ink3);border-color:var(--line);background:var(--bg)}
+.spotify-box{margin:0 2rem 2rem;padding:1.1rem 1.25rem;border:1px solid var(--line);border-radius:12px;display:none;align-items:center;gap:1rem;background:var(--white)}
+.spotify-box.show{display:flex}
+.sp-art{width:44px;height:44px;border-radius:6px;object-fit:cover;background:var(--line);flex-shrink:0}
+.sp-info{flex:1;min-width:0}
+.sp-label{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:#1db954;font-weight:600;margin-bottom:2px}
+.sp-song{font-size:0.88rem;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-artist{font-size:0.75rem;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-bars{display:flex;align-items:flex-end;height:16px;gap:2px;flex-shrink:0}
+.sp-bar{width:3px;border-radius:2px;background:#1db954;animation:sbar 0.8s ease-in-out infinite}
+@keyframes sbar{0%,100%{height:3px}50%{height:14px}}
+.act-box{margin:0 2rem 2rem;padding:1.1rem 1.25rem;border:1px solid var(--line);border-radius:12px;display:none;align-items:center;gap:1rem;background:var(--white)}
+.act-box.show{display:flex}
+.act-art{width:44px;height:44px;border-radius:6px;object-fit:cover;background:var(--line);flex-shrink:0}
+.act-info{flex:1;min-width:0}
+.act-label{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:2px}
+.act-name{font-size:0.88rem;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act-detail{font-size:0.75rem;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── ABOUT ── */
+.about{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+.about-col{padding:3rem 2rem}
+.about-col+.about-col{border-left:1px solid var(--line)}
+.col-label{font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:1.25rem;font-weight:500}
+.about-text{font-size:0.92rem;line-height:1.8;color:var(--ink2)}
+.about-text p+p{margin-top:0.9rem}
+.stats{display:flex;flex-direction:column}
+.stat{display:flex;justify-content:space-between;align-items:baseline;padding:0.9rem 0;border-bottom:1px solid var(--line)}
+.stat:last-child{border-bottom:none}
+.stat-l{font-size:0.82rem;color:var(--ink2)}
+.stat-n{font-family:'Cabinet Grotesk',sans-serif;font-size:1.6rem;font-weight:800;letter-spacing:-0.02em;color:var(--ink)}
+
+/* ── ROLES ── */
+.roles-section{border-bottom:1px solid var(--line)}
+.role-list{display:flex;flex-direction:column}
+.role-item{display:flex;align-items:center;justify-content:space-between;padding:1.4rem 2rem;border-top:1px solid var(--line);transition:background 0.15s;cursor:default}
+.role-item:hover{background:var(--white)}
+.role-left{display:flex;align-items:center;gap:1rem}
+.role-ic{width:38px;height:38px;border-radius:9px;background:var(--white);border:1px solid var(--line);overflow:hidden;flex-shrink:0}
+.role-ic img{width:100%;height:100%;object-fit:cover;border-radius:9px}
+.role-server{font-family:'Cabinet Grotesk',sans-serif;font-size:0.95rem;font-weight:700;letter-spacing:-0.01em;color:var(--ink)}
+.role-desc{font-size:0.75rem;color:var(--ink3);margin-top:2px}
+.role-badge{font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.22rem 0.75rem;border-radius:100px;border:1px solid;font-weight:500;white-space:nowrap}
+.badge-support{color:#1d4ed8;border-color:#bfdbfe;background:#eff6ff}
+
+/* ── SERVERS ── */
+.servers{border-bottom:1px solid var(--line)}
+.srv-list{display:flex;flex-direction:column}
+.srv{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-top:1px solid var(--line);transition:background 0.15s;cursor:default}
+.srv:hover{background:var(--white)}
+.srv-l{display:flex;align-items:center;gap:0.85rem}
+.srv-ic{width:38px;height:38px;border-radius:9px;background:var(--white);border:1px solid var(--line);overflow:hidden;flex-shrink:0}
+.srv-ic img{width:100%;height:100%;object-fit:cover;border-radius:9px}
+.srv-name{font-size:0.88rem;font-weight:500;color:var(--ink)}
+.srv-meta{font-size:0.73rem;color:var(--ink3);margin-top:1px}
+.srv-badge{font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.22rem 0.65rem;border-radius:100px;border:1px solid}
+.b-on{color:#16a34a;border-color:#bbf7d0;background:#f0fdf4}
+.b-owner{color:#7c3aed;border-color:#ddd6fe;background:#f5f3ff}
+
+/* ── SOCIAL ── */
+.social{border-bottom:1px solid var(--line)}
+.soc-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.soc{padding:1.5rem 2rem;border-top:1px solid var(--line);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:0.6rem;transition:background 0.15s;cursor:pointer}
+.soc:last-child{border-right:none}
+.soc:hover{background:var(--white)}
+.soc-plat{font-size:0.68rem;color:var(--ink3);letter-spacing:0.06em;text-transform:uppercase}
+.soc-handle{font-family:'Cabinet Grotesk',sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:-0.01em;color:var(--ink)}
+.soc-arr{font-size:0.8rem;color:var(--ink3);margin-top:0.25rem}
+
+footer{padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center}
+.ft-logo{font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:0.9rem;letter-spacing:-0.01em;color:var(--ink2)}
+.ft-copy{font-size:0.72rem;color:var(--ink3)}
+
+@media(max-width:700px){
+  .hero{grid-template-columns:1fr;padding:4rem 1.25rem 3rem}
+  .hero-right{display:none}
+  .about{grid-template-columns:1fr}
+  .about-col+.about-col{border-left:none;border-top:1px solid var(--line)}
+  .soc-grid{grid-template-columns:repeat(2,1fr)}
+  .soc:nth-child(2n){border-right:none}
+  .nav-r a:not(.nav-tag){display:none}
+  footer{flex-direction:column;gap:0.4rem;text-align:center}
+  .discord-body{grid-template-columns:1fr}
+  .spotify-box,.act-box{margin:0 1.25rem 1.5rem}
+  .sec-head,.role-item,.srv,.soc,.about-col{padding-left:1.25rem;padding-right:1.25rem}
+  .discord-body{padding:1.5rem 1.25rem}
+  footer{padding:1.5rem 1.25rem}
+  .music-bar{padding:0.85rem 1.25rem;gap:0.75rem}
+  .music-prog-wrap{display:none}
+  .mvol-wrap{display:none}
+}
+</style>
+</head>
+<body>
+
+<audio id="audio" loop src="music.mp3" preload="auto"></audio>
+
+<!-- GİRİŞ EKRANI -->
+<div id="loader">
+  <div class="loader-logo">Berat<span>Web</span></div>
+  <div class="loader-enter" id="enter-btn">
+    <div class="loader-btn">Girmek için tıkla</div>
+  </div>
+  <div class="loader-line"></div>
+</div>
+
+<nav>
+  <div class="logo">
+    <div class="nav-status-dot" id="nav-dot"></div>
+    BeratWeb
+  </div>
+  <div class="nav-r">
+    <a href="#discord">Discord</a>
+    <a href="#about">Hakkımda</a>
+    <a href="#roles">Yetkiler</a>
+    <a href="#social">İletişim</a>
+    <a href="https://discord.com/users/1153776118093058048" target="_blank" class="nav-tag">Profil →</a>
+  </div>
+</nav>
+
+<section class="hero" id="home">
+  <div class="hero-left">
+    <div class="hero-status">
+      <img src="" alt="" class="hero-avatar" id="hero-avatar">
+      <div>
+        <div class="hero-username" id="hero-username">BeratWeb</div>
+        <div class="hero-custom-status" id="hero-custom-status">Yükleniyor...</div>
+      </div>
+    </div>
+    <h1>Berat<br><em>Web.</em></h1>
+    <p class="hero-desc">Discord geliştirici ve topluluk kurucusu. Temiz tasarım, sade kod, güçlü topluluklar.</p>
+  </div>
+  <div class="hero-right">
+    <span class="hero-year">2025</span>
+  </div>
+</section>
+
+<section class="discord-section" id="discord">
+  <div class="sec-head">
+    <div class="section-title">Discord</div>
+    <span class="sec-label">Gerçek zamanlı</span>
+  </div>
+  <div class="discord-body">
+    <div class="dc-avatar-wrap">
+      <img src="" alt="avatar" class="dc-avatar" id="dc-avatar">
+      <div class="dc-ring" id="dc-ring"></div>
+    </div>
+    <div>
+      <div class="dc-name" id="dc-name">—</div>
+      <div class="dc-tag" id="dc-tag">—</div>
+      <div class="dc-custom" id="dc-custom"></div>
+      <span class="dc-badge offline" id="dc-badge">Yükleniyor</span>
+    </div>
+  </div>
+  <div class="spotify-box" id="sp-box">
+    <img src="" alt="" class="sp-art" id="sp-art">
+    <div class="sp-info">
+      <div class="sp-label">Spotify dinliyor</div>
+      <div class="sp-song" id="sp-song">—</div>
+      <div class="sp-artist" id="sp-artist">—</div>
+    </div>
+    <div class="sp-bars">
+      <div class="sp-bar" style="animation-delay:0s"></div>
+      <div class="sp-bar" style="animation-delay:0.2s"></div>
+      <div class="sp-bar" style="animation-delay:0.4s"></div>
+      <div class="sp-bar" style="animation-delay:0.6s"></div>
+    </div>
+  </div>
+  <div class="act-box" id="act-box">
+    <img src="" alt="" class="act-art" id="act-art">
+    <div class="act-info">
+      <div class="act-label">Şu an oynuyor</div>
+      <div class="act-name" id="act-name">—</div>
+      <div class="act-detail" id="act-detail">—</div>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="about-col">
+    <div class="col-label">Hakkımda</div>
+    <div class="about-text">
+      <p>Merhaba, ben BeratWeb. Discord ekosistemine olan tutkumla topluluklar kuruyor, botlar geliştiriyor ve insanların bir araya gelebileceği alanlar tasarlıyorum.</p>
+      <p>Her projede sadeliği esas alıyorum. Gereksiz karmaşıklık yerine temiz ve işlevsel çözümler üretmek benim için asıl önemli olan.</p>
+    </div>
+  </div>
+  <div class="about-col">
+    <div class="col-label">Sayılarla</div>
+    <div class="stats">
+      <div class="stat"><span class="stat-l">Yetkili Olduğum Sunucu</span><span class="stat-n">1+</span></div>
+      <div class="stat"><span class="stat-l">Yönettiğim Sunucu</span><span class="stat-n">1+</span></div>
+      <div class="stat"><span class="stat-l">Discord Deneyimi</span><span class="stat-n">3+ yıl</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="roles-section" id="roles">
+  <div class="sec-head">
+    <div class="section-title">Yetkili Olduğum Yerler</div>
+    <span class="sec-label">01 sunucu</span>
+  </div>
+  <div class="role-list">
+    <a class="role-item" href="https://discord.gg/k8hTG5W2wM" target="_blank" style="text-decoration:none;display:flex;align-items:center;justify-content:space-between;padding:1.4rem 2rem;border-top:1px solid var(--line);transition:background 0.15s;cursor:pointer">
+      <div class="role-left">
+        <div class="role-ic">
+          <img src="https://images-ext-1.discordapp.net/external/SxJKcwIMWm981qqMqz6YLORoTSEUpZHWeam6ZWUhvts/https/cdn.discordapp.com/icons/1464333308681785486/a64f45db7870630df9e056409591477f.png" alt="Berilis Hosting">
+        </div>
+        <div>
+          <div class="role-server">Berilis Hosting</div>
+          <div class="role-desc">Site: berilis.com</div>
+        </div>
+      </div>
+      <span class="role-badge badge-support">Technical Support</span>
+    </a>
+  </div>
+</section>
+
+<section class="servers" id="servers">
+  <div class="sec-head">
+    <div class="section-title">Sunucularım</div>
+    <span class="sec-label">01 sunucu</span>
+  </div>
+  <div class="srv-list">
+    <a class="srv" href="https://discord.gg/3khpcAnbVD" target="_blank" style="text-decoration:none">
+      <div class="srv-l">
+        <div class="srv-ic">
+          <img src="https://raisemc.com.tr/Files/Assets/img/logo/92fd27974f5095fafd46d6e4c6cae425.png" alt="RaiseMC">
+        </div>
+        <div>
+          <div class="srv-name">RaiseMC</div>
+          <div class="srv-meta">Site: raisemc.com.tr &nbsp;·&nbsp; IP: mc.raisemc.com.tr</div>
+        </div>
+      </div>
+      <span class="srv-badge b-owner">Owner</span>
+    </a>
+  </div>
+</section>
+
+<section class="social" id="social">
+  <div class="sec-head">
+    <div class="section-title">İletişim</div>
+    <span class="sec-label">04 platform</span>
+  </div>
+  <div class="soc-grid">
+    <a class="soc" href="https://discord.com/users/1153776118093058048" target="_blank">
+      <div class="soc-plat">Discord</div>
+      <div class="soc-handle" id="soc-discord">BeratWeb</div>
+      <div class="soc-arr">↗</div>
+    </a>
+    <a class="soc" href="#" target="_blank">
+      <div class="soc-plat">GitHub</div>
+      <div class="soc-handle">BeratWeb</div>
+      <div class="soc-arr">↗</div>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="ft-logo">BeratWeb</div>
+  <div class="ft-copy">© 2025</div>
+</footer>
+
+<!-- MÜZİK ÇUBUĞU -->
+<div class="music-bar">
+  <button class="music-btn" id="play-btn"><span id="play-icon">▶</span></button>
+  <div class="music-anim">
+    <div class="mbl" id="mb1"></div>
+    <div class="mbl" id="mb2"></div>
+    <div class="mbl" id="mb3"></div>
+    <div class="mbl" id="mb4"></div>
+  </div>
+  <div class="music-info">
+    <div class="music-title">DEHA ARCHIVED - YASA/DISI</div>
+    <div class="music-sub">Arka plan müziği</div>
+  </div>
+  <div class="music-prog-wrap">
+    <span class="mtime" id="cur-time">0:00</span>
+    <div class="mtrack" id="mtrack"><div class="mfill" id="mfill"></div></div>
+    <span class="mtime r" id="dur-time">0:00</span>
+  </div>
+  <div class="mvol-wrap">
+    <div class="vico" id="vol-icon">
+      <svg viewBox="0 0 16 16">
+        <path d="M9 1.5L5 5H2v6h3l4 3.5V1.5z"/>
+        <path id="vw1" d="M11.5 5.5a3 3 0 0 1 0 5"/>
+        <path id="vw2" d="M13 3.5a6 6 0 0 1 0 9"/>
+      </svg>
+    </div>
+    <input type="range" class="mvol" id="vol-slider" min="0" max="1" step="0.01" value="0.5">
+  </div>
+</div>
+
+<script>
+/* ── GİRİŞ ── */
+const loader = document.getElementById("loader");
+const enterBtn = document.getElementById("enter-btn");
+const audio = document.getElementById("audio");
+
+enterBtn.addEventListener("click", () => {
+  loader.classList.add("hidden");
+  document.body.classList.add("entered");
+  audio.volume = parseFloat(document.getElementById("vol-slider").value);
+  audio.play().then(() => setPlaying(true)).catch(() => {});
+});
+
+/* ── MÜZİK ── */
+const playBtn = document.getElementById("play-btn");
+const playIcon = document.getElementById("play-icon");
+const mbars = [document.getElementById("mb1"),document.getElementById("mb2"),document.getElementById("mb3"),document.getElementById("mb4")];
+const mfill = document.getElementById("mfill");
+const curTime = document.getElementById("cur-time");
+const durTime = document.getElementById("dur-time");
+const mtrack = document.getElementById("mtrack");
+const volSlider = document.getElementById("vol-slider");
+const volIcon = document.getElementById("vol-icon");
+
+const PLAY = "▶";
+const PAUSE = "⏸";
+let isPlaying = false;
+let lastVol = 0.5;
+
+function fmt(s){const m=Math.floor(s/60);return`${m}:${String(Math.floor(s%60)).padStart(2,"0")}`;}
+
+function setPlaying(v){
+  isPlaying = v;
+  playIcon.textContent = v ? PAUSE : PLAY;
+  mbars.forEach(b => v ? b.classList.add("playing") : b.classList.remove("playing"));
+}
+
+playBtn.addEventListener("click", () => {
+  if(isPlaying){audio.pause();setPlaying(false);}
+  else{audio.play().then(()=>setPlaying(true)).catch(()=>{});}
+});
+
+audio.addEventListener("timeupdate", () => {
+  if(!audio.duration) return;
+  mfill.style.width = (audio.currentTime / audio.duration * 100) + "%";
+  curTime.textContent = fmt(audio.currentTime);
+});
+audio.addEventListener("loadedmetadata", () => { durTime.textContent = fmt(audio.duration); });
+audio.addEventListener("ended", () => setPlaying(false));
+
+mtrack.addEventListener("click", e => {
+  if(!audio.duration) return;
+  const r = mtrack.getBoundingClientRect();
+  audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+});
+
+volSlider.addEventListener("input", e => {
+  const v = parseFloat(e.target.value);
+  audio.volume = v;
+  if(v > 0) lastVol = v;
+  updateVolIcon(v);
+});
+
+volIcon.addEventListener("click", () => {
+  if(audio.volume > 0){lastVol = audio.volume; audio.volume = 0; volSlider.value = 0;}
+  else{audio.volume = lastVol; volSlider.value = lastVol;}
+  updateVolIcon(audio.volume);
+});
+
+function updateVolIcon(v){
+  document.getElementById("vw1").style.display = v === 0 ? "none" : "";
+  document.getElementById("vw2").style.display = v < 0.5 ? "none" : "";
+}
+updateVolIcon(0.5);
+
+/* ── LANYARD ── */
+const ID = "1153776118093058048";
+const statusLabel = {online:"Çevrimiçi",idle:"Boşta",dnd:"Rahatsız Etme",offline:"Çevrimdışı"};
+
+function avatarUrl(uid,hash){
+  if(!hash)return"";
+  return`https://cdn.discordapp.com/avatars/${uid}/${hash}.${hash.startsWith("a_")?"gif":"png"}?size=256`;
+}
+function applyStatus(s){
+  ["online","idle","dnd","offline"].forEach(c=>{
+    document.getElementById("dc-ring").classList.remove(c);
+    document.getElementById("nav-dot").classList.remove(c);
+    document.getElementById("dc-badge").classList.remove(c);
+  });
+  document.getElementById("dc-ring").classList.add(s);
+  document.getElementById("nav-dot").classList.add(s);
+  document.getElementById("dc-badge").classList.add(s);
+  document.getElementById("dc-badge").textContent = statusLabel[s]||"Çevrimdışı";
+}
+function update(data){
+  const u = data.discord_user;
+  const av = avatarUrl(u.id, u.avatar);
+  if(av){document.getElementById("dc-avatar").src=av;document.getElementById("hero-avatar").src=av;}
+  const name = u.global_name||u.username;
+  document.getElementById("dc-name").textContent = name;
+  document.getElementById("dc-tag").textContent = "@"+u.username;
+  document.getElementById("hero-username").textContent = name;
+  document.getElementById("soc-discord").textContent = "@"+u.username;
+  applyStatus(data.discord_status||"offline");
+  const cs = (data.activities||[]).find(a=>a.type===4);
+  const csText = cs?.state||"";
+  document.getElementById("dc-custom").textContent = csText;
+  document.getElementById("hero-custom-status").textContent = csText||statusLabel[data.discord_status]||"";
+  const spBox = document.getElementById("sp-box");
+  if(data.listening_to_spotify&&data.spotify){
+    const sp=data.spotify;
+    document.getElementById("sp-art").src=sp.album_art_url;
+    document.getElementById("sp-song").textContent=sp.song;
+    document.getElementById("sp-artist").textContent=sp.artist;
+    spBox.classList.add("show");
+  }else{spBox.classList.remove("show");}
+  const actBox = document.getElementById("act-box");
+  const game = (data.activities||[]).find(a=>a.type===0);
+  if(game){
+    document.getElementById("act-name").textContent=game.name;
+    document.getElementById("act-detail").textContent=game.details||game.state||"";
+    let img="";
+    if(game.assets?.large_image){
+      const li=game.assets.large_image;
+      img=li.startsWith("mp:external")?li.replace(/mp:external\/[^/]+\/https\/(.+)/,"https://$1"):`https://cdn.discordapp.com/app-assets/${game.application_id}/${li}.png`;
+    }
+    document.getElementById("act-art").src=img;
+    actBox.classList.add("show");
+  }else{actBox.classList.remove("show");}
+}
+async function initLanyard(){
+  try{const r=await fetch(`https://api.lanyard.rest/v1/users/${ID}`);const j=await r.json();if(j.success)update(j.data);}catch(e){}
+  const ws=new WebSocket("wss://api.lanyard.rest/socket");
+  ws.onopen=()=>ws.send(JSON.stringify({op:2,d:{subscribe_to_id:ID}}));
+  ws.onmessage=e=>{const msg=JSON.parse(e.data);if(msg.op===1)ws.send(JSON.stringify({op:3}));if(msg.t==="INIT_STATE"||msg.t==="PRESENCE_UPDATE")update(msg.d);};
+}
+initLanyard();
+</script>
+</body>
+</html>
