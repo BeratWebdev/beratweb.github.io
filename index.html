@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="tr">
-<link rel="icon" href="https://cdn.discordapp.com/avatars/1153776118093058048/b8d95935377fce858240ee86d790c803.png?size=256">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -25,6 +24,9 @@ body{
   line-height:1.6;
   -webkit-font-smoothing:antialiased;
   overflow:hidden;
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  user-select:none;
 }
 body.entered{overflow-y:auto}
 a{color:inherit;text-decoration:none}
@@ -139,7 +141,7 @@ body.entered{padding-bottom:64px}
 .hero-avatar:hover{border-color:#c0bfb9}
 .hero-username{font-size:0.88rem;font-weight:500;color:var(--ink)}
 .hero-custom-status{font-size:0.75rem;color:var(--ink3);margin-top:2px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-h1{font-family:'Cabinet Grotesk',sans-serif;font-size:clamp(3.2rem,7vw,6.5rem);font-weight:800;line-height:0.92;letter-spacing:-0.em;color:var(--ink);margin-bottom:1.75rem}
+h1{font-family:'Cabinet Grotesk',sans-serif;font-size:clamp(3.2rem,7vw,6.5rem);font-weight:800;line-height:0.92;letter-spacing:-0.04em;color:var(--ink);margin-bottom:1.75rem}
 h1 em{font-style:normal;color:var(--ink2)}
 .hero-desc{max-width:400px;font-size:0.95rem;line-height:1.75;color:var(--ink2)}
 .hero-right{display:flex;flex-direction:column;align-items:flex-end;padding-bottom:0.25rem}
@@ -264,6 +266,7 @@ footer{padding:1.5rem 2rem;display:flex;justify-content:space-between;align-item
   <div class="loader-logo">Berat<span>Web</span></div>
   <div class="loader-enter" id="enter-btn">
     <div class="loader-btn">Girmek için tıkla</div>
+    <div class="loader-hint">müzik açılacak</div>
   </div>
   <div class="loader-line"></div>
 </div>
@@ -371,7 +374,7 @@ footer{padding:1.5rem 2rem;display:flex;justify-content:space-between;align-item
         </div>
         <div>
           <div class="role-server">Berilis Hosting</div>
-          <div class="role-desc">Site: berilis.com</div>
+          <div class="role-desc">Site: berilis.com &nbsp;·&nbsp; Hosting ve teknik destek</div>
         </div>
       </div>
       <span class="role-badge badge-support">Technical Support</span>
@@ -418,11 +421,6 @@ footer{padding:1.5rem 2rem;display:flex;justify-content:space-between;align-item
     </a>
   </div>
 </section>
-
-<footer>
-  <div class="ft-logo">BeratWeb</div>
-  <div class="ft-copy">© 2025</div>
-</footer>
 
 <!-- MÜZİK ÇUBUĞU -->
 <div class="music-bar">
@@ -591,6 +589,21 @@ async function initLanyard(){
   ws.onmessage=e=>{const msg=JSON.parse(e.data);if(msg.op===1)ws.send(JSON.stringify({op:3}));if(msg.t==="INIT_STATE"||msg.t==="PRESENCE_UPDATE")update(msg.d);};
 }
 initLanyard();
+
+/* ── KORUMA ── */
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("keydown", e => {
+  if(
+    e.key === "F12" ||
+    (e.ctrlKey && e.shiftKey && ["I","J","C"].includes(e.key.toUpperCase())) ||
+    (e.ctrlKey && e.key.toUpperCase() === "U") ||
+    (e.ctrlKey && e.key.toUpperCase() === "S") ||
+    (e.ctrlKey && e.key.toUpperCase() === "A") ||
+    (e.ctrlKey && e.key.toUpperCase() === "C")
+  ) e.preventDefault();
+});
+document.addEventListener("selectstart", e => e.preventDefault());
+document.addEventListener("dragstart", e => e.preventDefault());
 </script>
 </body>
 </html>
